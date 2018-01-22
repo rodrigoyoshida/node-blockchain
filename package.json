@@ -1,11 +1,12 @@
 {
-  "name": "blockchain01",
+  "name": "Blockchain",
   "version": "1.0.0",
-  "description": "First attempt to create a blockchain algorithm in Javascript",
-  "main": "index.js",
+  "description": "Simple blockchain in Node.js",
+  "main": "src/index.js",
   "author": "Rodrigo Yoshida",
   "license": "MIT",
   "dependencies": {
-    "crypto-js": "^3.1.9-1"
+    "crypto-js": "^3.1.9-1",
+    "express": "^4.16.2"
   }
 }
