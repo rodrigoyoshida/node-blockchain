@@ -3,52 +3,99 @@ const Block = require('./block.js');
 /** Classe para manipulação do blockchain */
 class Blockchain {
   constructor() {
-    this.chain = [new Block(0 , null, 'Genesis block')];
+    this.expectedMiningTime = 1000;
+    this.adjustDifficultyEvery = 3;
+
+    this.genesisBlock = new Block(0 , 'Genesis block', '', 10);
+    this.genesisBlock.mine();
+    this.chain = [this.genesisBlock];
   }
 
   getLatestBlock() {
     return this.chain[this.chain.length - 1];
   }
 
+  getUpdatedDifficulty() {
+    const latestBlock = this.getLatestBlock();
+    const nextIndex = latestBlock.content.index + 1;
+
+    if (nextIndex % this.adjustDifficultyEvery === 0) {
+      let
+        timeExpected = this.adjustDifficultyEvery * this.expectedMiningTime,
+        timeTaken = 0;
+      const
+        tolerance = timeExpected / 2;
+
+      for (
+        let cnt = this.chain.length - this.adjustDifficultyEvery;
+        cnt < this.chain.length ;
+        cnt++
+      ) {
+        timeTaken += this.chain[cnt].timestampAfterMining - this.chain[cnt].content.timestamp;
+      }
+
+      if (timeTaken < timeExpected - tolerance) {
+        return latestBlock.difficulty + 1;
+      } else if (timeTaken > timeExpected + tolerance) {
+        return latestBlock.difficulty - 1;
+      }
+      return latestBlock.difficulty;
+    } else {
+      return latestBlock.difficulty;
+    }
+  }
+
   addBlock(data) {
     const latestBlock = this.getLatestBlock();
     const newBlock = new Block(
       this.chain.length,
+      data,
       latestBlock.hash,
-      data
+      this.getUpdatedDifficulty()
     );
-    if (this.isBlockValid(newBlock, latestBlock)) {
-      this.chain.push(newBlock);
+
+    if (!newBlock.mine() || !this.isBlockValid(newBlock)) {
+      return "Invalid block";
     }
+    this.chain.push(newBlock);
+    return newBlock;
   }
 
   isBlockValid(newBlock, previousBlock) {
-    if (previousBlock.index + 1 !== newBlock.index) {
-      console.log('Invalid index: ' + JSON.stringify(newBlock));
-      return false;
-    } else if (previousBlock.hash != newBlock.previousHash) {
-      console.log('Invalid previous hash: ' + JSON.stringify(newBlock));
-      return false;
-    } else if (newBlock.calculateHash() !== newBlock.hash) {
-      console.log('Invalid block hash: ' + JSON.stringify(newBlock));
-      return false;
-    } else if (!newBlock.isStructureValid()) {
-      console.log('Invalid block structure: ' + JSON.stringify(newBlock));
+    const prevBlock = previousBlock ? previousBlock : this.getLatestBlock();
+    if (
+      prevBlock.content.index + 1 !== newBlock.content.index
+      || prevBlock.hash != newBlock.content.previousHash
+    ) {
       return false;
     }
     return true;
   }
 
-  isChainValid() {
-    for (let cnt = 1; cnt < this.chain.length; cnt++) {
-      const currentBlock = this.chain[cnt];
-      const previousBlock = this.chain[cnt - 1];
+  isChainValid(chain) {
+    if (JSON.stringify(chain[0]) !== JSON.stringify(this.genesisBlock)) {
+      return false;
+    }
+
+    for (let cnt = 1; cnt < chain.length; cnt++) {
+      const currentBlock = chain[cnt];
+      const previousBlock = chain[cnt - 1];
 
       if (!this.isBlockValid(currentBlock, previousBlock)) {
         return false;
       }
     }
+
     return true;
+  }
+
+  replaceChain(newChain) {
+    if (isChainValid(newChain) && newChain.length > this.chain.length) {
+      this.chain = newChain;
+      this.broadcastLatest();
+    } else {
+      console.log('Received invalid blockchain');
+    }
   }
 }
 
