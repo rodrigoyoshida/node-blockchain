@@ -6,5 +6,5 @@ Para utilizá-lo é necessário possuir o Node.js, Yarn (ou NPM) e executar os s
 
 ````
 $ yarn install
-$ node src/index.js
+$ yarn run serve
 ````
