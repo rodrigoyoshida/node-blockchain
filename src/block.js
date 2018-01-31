@@ -33,16 +33,12 @@ class Block {
 
   // TODO: Tornar o processo de mineração assíncrono
   mine() {
-    if (!this.hasValidStructure()) {
-      return false;
-    } else {
-      while (!this.satisfiedDifficulty()) {
-        this.content.iterator++;
-        this.calculateHash();
-      }
-      this.timestampAfterMining = Date.now();
-      return true;
+    while (!this.satisfiedDifficulty()) {
+      this.content.iterator++;
+      this.calculateHash();
     }
+    this.timestampAfterMining = Date.now();
+    return true;
   }
 
   satisfiedDifficulty() {
@@ -55,12 +51,20 @@ class Block {
          typeof this.content.index !== "number"
       || typeof this.content.data !== "string"
       || typeof this.content.previousHash !== "string"
+      || typeof this.content.timestamp !== "number"
+      || typeof this.content.iterator !== "number"
       || typeof this.difficulty !== "number"
+      || typeof this.hash !== "string"
+      || typeof this.timestampAfterMining !== "number"
       || this.content.data.length <= 0
     ) {
       return false;
     }
     return true;
+  }
+
+  isValid() {
+    return this.satisfiedDifficulty() && this.hasValidStructure();
   }
 }
 
