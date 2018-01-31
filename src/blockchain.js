@@ -28,7 +28,7 @@ class Blockchain {
 
       for (
         let cnt = this.chain.length - this.adjustDifficultyEvery;
-        cnt < this.chain.length ;
+        cnt < this.chain.length;
         cnt++
       ) {
         timeTaken += this.chain[cnt].timestampAfterMining - this.chain[cnt].content.timestamp;
@@ -39,10 +39,8 @@ class Blockchain {
       } else if (timeTaken > timeExpected + tolerance) {
         return latestBlock.difficulty - 1;
       }
-      return latestBlock.difficulty;
-    } else {
-      return latestBlock.difficulty;
     }
+    return latestBlock.difficulty;
   }
 
   addBlock(data) {
@@ -64,8 +62,9 @@ class Blockchain {
   isBlockValid(newBlock, previousBlock) {
     const prevBlock = previousBlock ? previousBlock : this.getLatestBlock();
     if (
-      prevBlock.content.index + 1 !== newBlock.content.index
+         prevBlock.content.index + 1 !== newBlock.content.index
       || prevBlock.hash != newBlock.content.previousHash
+      || !newBlock.isValid()
     ) {
       return false;
     }
@@ -89,10 +88,20 @@ class Blockchain {
     return true;
   }
 
+  calcChainDifficulty(chain) {
+    return 
+      chain
+      .map((block) => block.difficulty)
+      .map((difficulty) => Math.pow(2, difficulty))
+      .reduce((a, b) => a + b);
+  }
+
   replaceChain(newChain) {
-    if (isChainValid(newChain) && newChain.length > this.chain.length) {
+    if (
+      isChainValid(newChain) 
+      && calcChainDifficulty(newChain) > calcChainDifficulty(this.chain)
+    ) {
       this.chain = newChain;
-      this.broadcastLatest();
     } else {
       console.log('Received invalid blockchain');
     }
