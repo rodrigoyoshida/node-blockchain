@@ -35,7 +35,7 @@ const httpServer = function(myHttpPort) {
   });
 
   app.listen(myHttpPort, function() {
-    console.log('Listening HTTP on port: ' + myHttpPort);
+    console.log('Serving API on: http://localhost:' + myHttpPort);
   });
 }
 
